@@ -1,2 +1,9 @@
+/node_modules
+/dist
+/uploads
 backend-api/node_modules/
 backend-api/dist/
+prisma/*.db
+prisma/*.db-journal
+.env
+test-file.txt
