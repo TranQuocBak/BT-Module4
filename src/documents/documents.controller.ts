@@ -9,6 +9,14 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiConsumes,
+  ApiBody,
+  ApiParam,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { existsSync, mkdirSync } from 'fs';
@@ -31,6 +39,7 @@ const storageOptions = diskStorage({
   },
 });
 
+@ApiTags('Documents')
 @Controller('documents')
 export class DocumentsController {
   constructor(private readonly documentsService: DocumentsService) {}
@@ -38,14 +47,59 @@ export class DocumentsController {
   /**
    * API Upload tệp theo userId
    * POST /documents/upload
-   * Body: multipart/form-data chứa 'userId' và 'file'
    */
   @Post('upload')
+  @ApiOperation({
+    summary: 'Upload một tệp theo User ID',
+    description:
+      'API tiếp nhận tệp tải lên (dạng multipart/form-data) cùng với userId, lưu tệp vào thư mục và ghi nhận thông tin tài liệu vào CSDL.',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Thông tin userId và tệp tải lên',
+    schema: {
+      type: 'object',
+      required: ['userId', 'file'],
+      properties: {
+        userId: {
+          type: 'string',
+          description: 'ID của người dùng sở hữu tệp',
+          example: 'user-123',
+        },
+        file: {
+          type: 'string',
+          format: 'binary',
+          description: 'Tệp cần tải lên',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Lưu tệp thành công',
+    schema: {
+      example: {
+        message: 'Lưu tệp thành công',
+        data: {
+          id: 'd64a352c-d78a-499a-9880-c365c9b6694e',
+          userId: 'user-123',
+          fileName: '1786519382420-663931422.pdf',
+          originalName: 'tailieu.pdf',
+          mimeType: 'application/pdf',
+          size: 10240,
+          filePath: 'uploads/1786519382420-663931422.pdf',
+          createdAt: '2026-08-12T07:23:02.431Z',
+          updatedAt: '2026-08-12T07:23:02.431Z',
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'Thiếu tệp hoặc dữ liệu userId không hợp lệ' })
   @UseInterceptors(
     FileInterceptor('file', {
       storage: storageOptions,
       limits: {
-        fileSize: 50 * 1024 * 1024, // Hạn chế 50MB
+        fileSize: 50 * 1024 * 1024, // Giới hạn 50MB
       },
     }),
   )
@@ -65,6 +119,14 @@ export class DocumentsController {
    * GET /documents/:id
    */
   @Get(':id')
+  @ApiOperation({ summary: 'Lấy thông tin tài liệu theo Document ID' })
+  @ApiParam({
+    name: 'id',
+    description: 'UUID của tài liệu trong CSDL',
+    example: 'd64a352c-d78a-499a-9880-c365c9b6694e',
+  })
+  @ApiResponse({ status: 200, description: 'Trả về thông tin chi tiết tài liệu' })
+  @ApiResponse({ status: 404, description: 'Không tìm thấy tài liệu với ID này' })
   async getDocumentById(@Param('id') id: string) {
     return this.documentsService.getDocumentById(id);
   }
@@ -74,6 +136,13 @@ export class DocumentsController {
    * GET /documents/user/:userId
    */
   @Get('user/:userId')
+  @ApiOperation({ summary: 'Lấy danh sách tất cả tài liệu của một User' })
+  @ApiParam({
+    name: 'userId',
+    description: 'ID của người dùng',
+    example: 'user-123',
+  })
+  @ApiResponse({ status: 200, description: 'Trả về danh sách các tài liệu thuộc sở hữu của User' })
   async getDocumentsByUserId(@Param('userId') userId: string) {
     return this.documentsService.getDocumentsByUserId(userId);
   }
