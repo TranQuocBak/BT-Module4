@@ -16,12 +16,13 @@ async function bootstrap() {
 
   // Cấu hình Swagger UI
   const config = new DocumentBuilder()
-    .setTitle('Document Management API - NestJS')
+    .setTitle('Document & User Management API - NestJS')
     .setDescription(
-      'API quản lý và lưu trữ tệp theo User ID (kèm thông tin tài liệu, tệp, userId trong CSDL)',
+      'Hệ thống API quản lý Người dùng (Users) và Lưu trữ Tệp theo User ID (Documents) bằng NestJS, Prisma & SQLite',
     )
     .setVersion('1.0')
-    .addTag('Documents', 'Các API xử lý tải lên và truy vấn tài liệu')
+    .addTag('Users', 'Các API quản lý người dùng (Tạo User, Xem danh sách User)')
+    .addTag('Documents', 'Các API xử lý tải lên và truy vấn tài liệu theo User ID')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
