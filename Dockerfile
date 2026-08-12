@@ -1,5 +1,8 @@
-# Multi-stage build cho ứng dụng NestJS Document API
+# Stage 1: Builder
 FROM node:20-alpine AS builder
+
+# Cài đặt OpenSSL cho Alpine Linux
+RUN apk add --no-cache openssl libc6-compat
 
 WORKDIR /app
 
@@ -19,6 +22,9 @@ RUN npm run build
 
 # Stage 2: Runner Production
 FROM node:20-alpine AS runner
+
+# Cài đặt OpenSSL cho Alpine Linux
+RUN apk add --no-cache openssl libc6-compat
 
 WORKDIR /app
 
